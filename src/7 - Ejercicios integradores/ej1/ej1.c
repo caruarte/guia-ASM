@@ -10,7 +10,7 @@
  * Funciones a implementar:
  *   - es_indice_ordenado
  */
-bool EJERCICIO_1A_HECHO = false;
+bool EJERCICIO_1A_HECHO = true;
 
 /**
  * Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
@@ -24,6 +24,11 @@ bool EJERCICIO_1B_HECHO = false;
  * OPCIONAL: implementar en C
  */
 bool es_indice_ordenado(item_t** inventario, uint16_t* indice, uint16_t tamanio, comparador_t comparador) {
+	for (int i = 0; i < tamanio - 1; i++){
+		if (comparador(inventario[indice[i]], inventario[indice[i+1]]) == false){
+			return false;
+		}
+	}
 	return true;
 }
 

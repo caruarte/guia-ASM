@@ -14,7 +14,7 @@ TRUE  EQU 1
 ; Funciones a implementar:
 ;   - es_indice_ordenado
 global EJERCICIO_1A_HECHO
-EJERCICIO_1A_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
 ;
@@ -25,10 +25,10 @@ EJERCICIO_1B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
-ITEM_NOMBRE EQU ??
-ITEM_FUERZA EQU ??
-ITEM_DURABILIDAD EQU ??
-ITEM_SIZE EQU ??
+ITEM_NOMBRE EQU 0
+ITEM_FUERZA EQU 20
+ITEM_DURABILIDAD EQU 24
+ITEM_SIZE EQU 28
 
 ;; La funcion debe verificar si una vista del inventario está correctamente 
 ;; ordenada de acuerdo a un criterio (comparador)
@@ -59,11 +59,59 @@ es_indice_ordenado:
 	; ubicación según la convención de llamada. Prestá atención a qué
 	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
 	;
-	; r/m64 = item_t**     inventario
-	; r/m64 = uint16_t*    indice
-	; r/m16 = uint16_t     tamanio
-	; r/m64 = comparador_t comparador
-		ret
+	; rdi = item_t**     inventario
+	; rsi = uint16_t*    indice
+	; dx = uint16_t     tamanio
+	; rcx = comparador_t comparador
+
+	push rbp
+	mov rbp, rsp 
+	push r12 ; inventario
+	push r13  ; indice
+	push r14 ; tamaño
+	push r15 ; comparador
+	push rbx ; i 
+	sub rsp, 8
+	mov r12, rdi
+	mov r13, rsi
+	; mov r14w, dx ; MAL, LO TENGO QUE EXTENDER A 32 BYTES
+	movzx r14d, dx ; ME LLEVO EL DX SIN LA BASURA DE LOS BITS ALTOS
+	mov r15, rcx ; cualquier escritura en un registro de 32 bits (ej: r14d) pone a cero automáticamente los 32 bits altos del registro de 64 bits asociado (r14).
+
+	xor rbx, rbx
+	.ciclo:
+		mov r10d, r14d
+    	dec r10
+    	cmp rbx, r10 ; i - 1 ;; USAR EL CMP CON LOS REGISTROS GRANDES, SINO SE
+    	jge .fin
+
+		; mov rdi, [r12 + 8*[r13 + 2*rbx]]
+		xor r8, r8
+		; mov r8, [r13 + 2*rbx] ; MAL PORQUE QUIERO AGARRAR SOLO 2 BYTES DE ESA DIRECCION
+		movzx r8, word[r13 + 2*rbx]
+		mov rdi, [r12 + 8*r8]
+		movzx r8, word[r13 + 2*(rbx + 1)]
+		mov rsi, [r12 + 8*r8]
+		call r15 ; llamo al comparador
+		cmp rax, FALSE
+		je .noCumple
+
+		inc rbx
+		jmp .ciclo  ; ME OLVIDE DE PONER ESTO
+	.noCumple:
+	mov rax, FALSE
+	jmp .epilogo
+	.fin:
+	mov rax, TRUE
+	.epilogo:
+	add rsp, 8
+	pop rbx
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp ; PUSE LOS POPS EN MAL
+	ret
 
 ;; Dado un inventario y una vista, crear un nuevo inventario que mantenga el
 ;; orden descrito por la misma.
