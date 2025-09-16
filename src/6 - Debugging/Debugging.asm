@@ -11,106 +11,138 @@ FALSE EQU 0
 ; Marca un ejercicio como hecho
 TRUE  EQU 1
 
-ITEM_OFFSET_NOMBRE EQU 9
-ITEM_OFFSET_ID EQU 16
-ITEM_OFFSET_CANTIDAD EQU 24
+ITEM_OFFSET_NOMBRE EQU 0
+ITEM_OFFSET_ID EQU 12
+ITEM_OFFSET_CANTIDAD EQU 16
 
-POINTER_SIZE EQU 4
-UINT32_SIZE EQU 8
+POINTER_SIZE EQU 8
+UINT32_SIZE EQU 4
 
 ; Marcar el ejercicio como hecho (`true`) o pendiente (`false`).
 
 global EJERCICIO_1_HECHO
-EJERCICIO_1_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 global EJERCICIO_2_HECHO
-EJERCICIO_2_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_2_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 global EJERCICIO_3_HECHO
-EJERCICIO_3_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_3_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 global EJERCICIO_4_HECHO
-EJERCICIO_4_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_4_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 global ejercicio1
 ejercicio1:
-	add edi, ecx
-	add edi, edx
-    add edi, ebx
-    add edi, r9d
-	mov eax, edi
+	add rdi, rsi
+	add rdi, rdx
+    add rdi, rcx
+    add rdi, r8
+	mov rax, rdi
 	ret
 
 global ejercicio2
 ejercicio2:
-	mov [rdi+ITEM_OFFSET_ID], rsi
-	mov [rdi+ITEM_OFFSET_CANTIDAD], rdx
+	mov DWORD[rdi+ITEM_OFFSET_ID], esi
+	mov DWORD [rdi+ITEM_OFFSET_CANTIDAD], edx
+	mov rsi, rcx
 	call strcpy 
 	ret
 
 
 global ejercicio3
 ejercicio3:
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15 ; acumulador
+	xor r15, r15
+	mov r12, rdi ; arr
+	mov r13D, esi ; n
+	mov r14, rdx ; fun
+
 	cmp rsi, 0
 	je .vacio
-	
-	mov rcx, rdi ; array
-	mov r8, 0 ; sumatoria
-	mov r9, 0 ; i
+	cmp rsi, 1
+	je .base
 
-	.loop:
-	mov rdi, r8
-	mov rsi, [rcx + r9*4]
+	dec esi
+	call ejercicio3
+	add r15D, eax
+	mov edi, eax
+	mov r8D, r13D
+	dec r8
+	mov esi, [r12 + r8*4]
+	call r14
+	add r15D, eax
+	mov eax, r15d
+	jmp .end
 
-	call rdx
-
-	add r8, rax
-	mov rax, r8
-
-	inc r9
-	cmp r9, rsi
-	je .end
-
-	jmp .loop
-
+	.base:
+	mov edi, 0
+	mov esi, [r12]
+	call r14
+	jmp .end
 	.vacio:
-	mov rax, 64
+	mov eax, 64
 
 	.end:
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
 	ret
 
 global ejercicio4
 ejercicio4:
-	mov r12, rdi
-	mov r13, rsi
-	mov r14, rdx
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	push rbx
+	sub rsp, 8
+	mov r12, rdi ; array
+	mov r13d, esi ; size
+	mov r14d, edx ; constante
 
-	xor rdi, rdi
-	mov eax, UINT32_SIZE
-	mul esi
-	mov edi, eax
+	mov rdi, UINT32_SIZE
+	imul rdi, r13 ; se guarda en eax, sino usar imul
 
 	call malloc
-	mov r15, rax
+
+	mov r15, rax ; res_arr
 	
-	xor rbx, rbx
+	xor rbx, rbx ; indice
 	.loop:
 	
-	cmp rbx, r13
+	cmp ebx, r13d
 	je .end
 
 	mov r8, [r12+rbx*POINTER_SIZE]
 	mov r9d, [r8]
-	mov rax, r14
-	mul r9d
-	mov [r15+rbx*UINT32_SIZE], eax
+	mov eax, r14d ; contante
+	imul eax, r9d ; constante * numero
+	mov DWORD [r15+rbx*UINT32_SIZE], eax
 	
-	mov rsi, r8 
+	mov rdi, r8 
 	call free
+	mov QWORD [r12+rbx*POINTER_SIZE], 0
 
-	inc rbx
+	inc ebx
 	jmp .loop
 
 	.end:
 	mov rax, r15
+	add rsp, 8
+	pop rbx
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
 	ret
