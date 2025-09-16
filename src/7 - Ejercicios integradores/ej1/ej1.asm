@@ -21,7 +21,7 @@ EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ; Funciones a implementar:
 ;   - indice_a_inventario
 global EJERCICIO_1B_HECHO
-EJERCICIO_1B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
@@ -139,7 +139,41 @@ indice_a_inventario:
 	; ubicación según la convención de llamada. Prestá atención a qué
 	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
 	;
-	; r/m64 = item_t**  inventario
-	; r/m64 = uint16_t* indice
-	; r/m16 = uint16_t  tamanio
+	; rdi = item_t**  inventario
+	; rsi = uint16_t* indice
+	; dx = uint16_t  tamanio
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	mov r12, rdi ; inventario
+	mov r13, rsi ; indice
+	movzx r14d, dx ; tamaño
+	xor r15, r15 ; i
+
+	xor rdi, rdi
+	mov edi, r14d
+	imul rdi, 8
+	call malloc ; tengo en rax mi resultado
+	.ciclo:
+		mov r8d, r14d
+		cmp r15, r8
+		je .fin
+
+		xor r9, r9
+		movzx r9, word [r13 + r15*2] ; puedo pasar de 16 a 64 si el de 16 es memoria y no registro
+		mov r9, [r12 + r9*8]
+		mov [rax + r15*8], r9
+
+		inc r15
+		jmp .ciclo
+	.fin:
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
 	ret

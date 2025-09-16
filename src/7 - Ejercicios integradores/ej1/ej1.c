@@ -18,7 +18,7 @@ bool EJERCICIO_1A_HECHO = true;
  * Funciones a implementar:
  *   - indice_a_inventario
  */
-bool EJERCICIO_1B_HECHO = false;
+bool EJERCICIO_1B_HECHO = true;
 
 /**
  * OPCIONAL: implementar en C
@@ -37,6 +37,9 @@ bool es_indice_ordenado(item_t** inventario, uint16_t* indice, uint16_t tamanio,
  */
 item_t** indice_a_inventario(item_t** inventario, uint16_t* indice, uint16_t tamanio) {
 	// ¿Cuánta memoria hay que pedir para el resultado?
-	item_t** resultado;
+	item_t** resultado = malloc(tamanio*8); // hay tamanio punteros
+	for (int i = 0; i < tamanio; i++){
+		resultado[i] = inventario[indice[i]];
+	}
 	return resultado;
 }
