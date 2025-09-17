@@ -82,7 +82,7 @@ es_indice_ordenado:
 	.ciclo:
 		mov r10d, r14d
     	dec r10
-    	cmp rbx, r10 ; i - 1 ;; USAR EL CMP CON LOS REGISTROS GRANDES, SINO SE
+    	cmp rbx, r10 ; i - 1 ;; USAR EL CMP CON LOS REGISTROS GRANDES, SINO SE ROMPE
     	jge .fin
 
 		; mov rdi, [r12 + 8*[r13 + 2*rbx]]
